@@ -22,8 +22,8 @@ function line(
     id: 'l1',
     label: 'Воронка',
     kpiPriceRub: kpiPlan,
-    h1: { budgetFactRub: budgetH1, leads: leadsH1 || 1 },
-    h2: { budgetFactRub: budgetH2, leads: leadsH2 || 1 },
+    h1: { budgetFactRub: budgetH1, leads: leadsH1 || 1, leadPriceRub: 0 },
+    h2: { budgetFactRub: budgetH2, leads: leadsH2 || 1, leadPriceRub: 0 },
   }
 }
 

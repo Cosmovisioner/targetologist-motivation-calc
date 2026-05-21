@@ -4,6 +4,8 @@ export type Half = 'h1' | 'h2'
 export interface PeriodInput {
   budgetFactRub: number
   leads: number
+  /** Фактическая цена лида, ₽ — ввод вручную; при смене бюджета/лидов пересчитывается автоматически */
+  leadPriceRub: number
 }
 
 export interface KpiLine {

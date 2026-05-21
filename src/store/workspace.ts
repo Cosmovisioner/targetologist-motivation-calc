@@ -1,15 +1,25 @@
-import type { KpiLine, MonthWorkspace, Project } from '../lib/motivation/types'
+import type { KpiLine, MonthWorkspace, PeriodInput, Project } from '../lib/motivation/types'
 import { uid } from '../lib/format'
 
 const STORAGE_KEY = 'targetologist-motivation-workspace'
 
 type LegacyKpiLine = KpiLine & { kpiPlanRub?: number; kpiPlanLeads?: number }
 
+function normalizePeriod(p: PeriodInput & { leadPriceRub?: number }): PeriodInput {
+  return {
+    budgetFactRub: p.budgetFactRub ?? 0,
+    leads: p.leads ?? 0,
+    leadPriceRub: p.leadPriceRub ?? 0,
+  }
+}
+
 function normalizeLine(raw: LegacyKpiLine): KpiLine {
   const { kpiPlanRub, kpiPlanLeads: _drop, ...rest } = raw
   return {
     ...rest,
     kpiPriceRub: rest.kpiPriceRub ?? kpiPlanRub ?? 0,
+    h1: normalizePeriod(rest.h1),
+    h2: normalizePeriod(rest.h2),
   }
 }
 
@@ -18,8 +28,8 @@ export function defaultKpiLine(): KpiLine {
     id: uid(),
     label: 'Воронка 1',
     kpiPriceRub: 0,
-    h1: { budgetFactRub: 0, leads: 0 },
-    h2: { budgetFactRub: 0, leads: 0 },
+    h1: { budgetFactRub: 0, leads: 0, leadPriceRub: 0 },
+    h2: { budgetFactRub: 0, leads: 0, leadPriceRub: 0 },
   }
 }
 

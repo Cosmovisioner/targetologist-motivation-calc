@@ -1,6 +1,7 @@
 import type { KpiLine, MonthWorkspace, Project } from '../lib/motivation/types'
 import { aggregateKpiPercent, growthMatchedProjects } from '../lib/motivation/calculate'
-import { factCplRub, pctOfKpi } from '../lib/motivation/cpl'
+import { effectiveLeadPriceRub, pctOfKpi, periodWithAutoLeadPrice } from '../lib/motivation/cpl'
+import type { PeriodInput } from '../lib/motivation/types'
 import { formatMonthRu, previousMonthKey } from '../lib/monthLabel'
 import { defaultKpiLine, defaultProject } from '../store/workspace'
 import { formatPct, formatRub, parseNum, uid } from '../lib/format'
@@ -217,10 +218,26 @@ function KpiRow({
   onRemove: () => void
   canRemove: boolean
 }) {
-  const cplH1 = factCplRub(line.h1.budgetFactRub, line.h1.leads)
-  const cplH2 = factCplRub(line.h2.budgetFactRub, line.h2.leads)
+  const cplH1 = effectiveLeadPriceRub(line.h1)
+  const cplH2 = effectiveLeadPriceRub(line.h2)
   const pctH1 = pctOfKpi(cplH1, line.kpiPriceRub)
   const pctH2 = pctOfKpi(cplH2, line.kpiPriceRub)
+
+  const patchH1 = (patch: Partial<PeriodInput>) => {
+    let next = { ...line.h1, ...patch }
+    if ('budgetFactRub' in patch || 'leads' in patch) {
+      next = periodWithAutoLeadPrice(next)
+    }
+    onPatch({ h1: next })
+  }
+
+  const patchH2 = (patch: Partial<PeriodInput>) => {
+    let next = { ...line.h2, ...patch }
+    if ('budgetFactRub' in patch || 'leads' in patch) {
+      next = periodWithAutoLeadPrice(next)
+    }
+    onPatch({ h2: next })
+  }
 
   return (
     <tr className="border-b border-dashed border-graphite/15 hover:bg-ivory/50">
@@ -243,34 +260,42 @@ function KpiRow({
       <td className="p-2">
         <NumInput
           value={line.h1.budgetFactRub}
-          onChange={(v) => onPatch({ h1: { ...line.h1, budgetFactRub: v } })}
+          onChange={(v) => patchH1({ budgetFactRub: v })}
         />
       </td>
       <td className="p-2">
         <NumInput
           value={line.h1.leads}
-          onChange={(v) => onPatch({ h1: { ...line.h1, leads: v } })}
+          onChange={(v) => patchH1({ leads: v })}
           integer
         />
       </td>
       <td className="p-2">
-        <CalcCell valueRub={cplH1} pct={pctH1} />
+        <LeadPriceInput
+          value={line.h1.leadPriceRub}
+          pct={pctH1}
+          onChange={(v) => patchH1({ leadPriceRub: v })}
+        />
       </td>
       <td className="p-2">
         <NumInput
           value={line.h2.budgetFactRub}
-          onChange={(v) => onPatch({ h2: { ...line.h2, budgetFactRub: v } })}
+          onChange={(v) => patchH2({ budgetFactRub: v })}
         />
       </td>
       <td className="p-2">
         <NumInput
           value={line.h2.leads}
-          onChange={(v) => onPatch({ h2: { ...line.h2, leads: v } })}
+          onChange={(v) => patchH2({ leads: v })}
           integer
         />
       </td>
       <td className="p-2">
-        <CalcCell valueRub={cplH2} pct={pctH2} />
+        <LeadPriceInput
+          value={line.h2.leadPriceRub}
+          pct={pctH2}
+          onChange={(v) => patchH2({ leadPriceRub: v })}
+        />
       </td>
       <td className="p-2">
         {canRemove && (
@@ -283,17 +308,23 @@ function KpiRow({
   )
 }
 
-function CalcCell({ valueRub, pct }: { valueRub: number | null; pct: number | null }) {
+function LeadPriceInput({
+  value,
+  pct,
+  onChange,
+}: {
+  value: number
+  pct: number | null
+  onChange: (v: number) => void
+}) {
   const zone = pct !== null ? kpiZone(pct) : 'yellow'
   const zoneCls =
-    zone === 'green' ? 'zone-green' : zone === 'red' ? 'zone-red' : 'bg-graphite/5'
+    zone === 'green' ? 'zone-green border-emerald-300' : zone === 'red' ? 'zone-red border-red-300' : 'border-graphite/25'
   return (
-    <div className={`rounded-md border px-2 py-1.5 ${zoneCls}`}>
-      <p className="font-mono text-xs font-semibold text-graphite">
-        {valueRub !== null ? formatRub(valueRub) : '—'}
-      </p>
-      <p className="mono-tag text-[9px] text-muted mt-0.5">
-        {pct !== null ? formatPct(pct) : 'бюджет ÷ лиды'}
+    <div>
+      <NumInput value={value} onChange={onChange} className={zoneCls} />
+      <p className="mono-tag text-[9px] text-muted mt-1 px-0.5">
+        {pct !== null ? formatPct(pct) : 'введите ₽'}
       </p>
     </div>
   )

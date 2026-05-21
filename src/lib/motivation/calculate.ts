@@ -20,7 +20,7 @@ import {
   leadCoefFromAggregateKpi,
   MOTIVATION_RULES,
 } from './rules'
-import { factCplRub, pctOfKpi as pctOfKpiPercent } from './cpl'
+import { effectiveLeadPriceRub, factCplRub, pctOfKpi as pctOfKpiPercent } from './cpl'
 import type {
   Half,
   HalfPeriodResult,
@@ -71,7 +71,7 @@ export function collectLines(workspace: MonthWorkspace, half: Half): LinePeriodM
       .find((p) => p.id === row.projectId)!
       .kpiLines.find((l) => l.id === row.lineId)!
     const p = periodOf(line, half)
-    const factCpl = factCplRub(p.budgetFactRub, p.leads)
+    const factCpl = effectiveLeadPriceRub(p)
     const pctKpi = pctOfKpiPercent(factCpl, line.kpiPriceRub)
     const weight = totalBudget > 0 ? p.budgetFactRub / totalBudget : 0
     const weightedContribution = pctKpi !== null ? pctKpi * weight : 0
@@ -114,7 +114,11 @@ export function collectLinesFullMonth(workspace: MonthWorkspace): LinePeriodMetr
       .kpiLines.find((l) => l.id === row.lineId)!
     const budgetRub = line.h1.budgetFactRub + line.h2.budgetFactRub
     const leads = line.h1.leads + line.h2.leads
-    const factCpl = factCplRub(budgetRub, leads)
+    const factCpl = effectiveLeadPriceRub({
+      budgetFactRub: budgetRub,
+      leads,
+      leadPriceRub: 0,
+    })
     const pctKpi = pctOfKpiPercent(factCpl, line.kpiPriceRub)
     const weight = totalBudget > 0 ? budgetRub / totalBudget : 0
     const weightedContribution = pctKpi !== null ? pctKpi * weight : 0
@@ -122,7 +126,7 @@ export function collectLinesFullMonth(workspace: MonthWorkspace): LinePeriodMetr
       ...row,
       budgetRub,
       leads,
-      factCplRub: factCpl,
+      factCplRub: factCpl ?? factCplRub(budgetRub, leads),
       pctOfKpi: pctKpi,
       weight,
       weightedContribution,
