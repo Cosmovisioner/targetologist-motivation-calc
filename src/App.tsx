@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import FormulasSheet from './components/FormulasSheet'
 import ProjectsTable from './components/ProjectsTable'
 import ResultsPanel from './components/ResultsPanel'
+import UserGuide from './components/UserGuide'
 import type { MonthWorkspace } from './lib/motivation/types'
 import {
   defaultWorkspace,
@@ -88,6 +89,7 @@ export default function App() {
 
       <main className="max-w-7xl mx-auto px-4 py-6 grid lg:grid-cols-[1fr_320px] gap-6 items-start">
         <div className="space-y-6 min-w-0">
+          <UserGuide currentMonth={workspace.month} />
           <ProjectsTable workspace={workspace} onChange={setWorkspace} />
           <FormulasSheet />
         </div>

@@ -1,7 +1,15 @@
 import type { KpiLine, MonthWorkspace, Project } from '../lib/motivation/types'
-import { aggregateKpiPercent } from '../lib/motivation/calculate'
+import { aggregateKpiPercent, growthMatchedProjects } from '../lib/motivation/calculate'
+import { formatMonthRu, previousMonthKey } from '../lib/monthLabel'
 import { defaultKpiLine, defaultProject } from '../store/workspace'
-import { formatPct, parseNum, uid } from '../lib/format'
+import { formatPct, formatRub, parseNum, uid } from '../lib/format'
+
+function projectMonthSpend(project: Project): number {
+  return project.kpiLines.reduce(
+    (s, line) => s + line.h1.budgetFactRub + line.h2.budgetFactRub,
+    0,
+  )
+}
 
 type Props = {
   workspace: MonthWorkspace
@@ -56,6 +64,8 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
 
   const aggH1 = aggregateKpiPercent(workspace, 'h1')
   const aggH2 = aggregateKpiPercent(workspace, 'h2')
+  const prevKey = previousMonthKey(workspace.month)
+  const matchedIds = new Set(growthMatchedProjects(workspace).map((p) => p.id))
 
   return (
     <div className="space-y-4">
@@ -63,7 +73,7 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
         <div>
           <h2 className="display-head text-xl">Проекты и ввод</h2>
           <p className="text-sm text-muted mt-1">
-            Сводный KPI за половину: H1 {formatPct(aggH1)} · H2 {formatPct(aggH2)}
+            Сводный KPI за половину: Н1 {formatPct(aggH1)} · Н2 {formatPct(aggH2)}
           </p>
         </div>
         <button
@@ -75,7 +85,11 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
         </button>
       </div>
 
-      {workspace.projects.map((project) => (
+      {workspace.projects.map((project) => {
+        const currentSpend = projectMonthSpend(project)
+        const inGrowth = matchedIds.has(project.id)
+
+        return (
         <div
           key={project.id}
           className="rounded-[20px] border border-graphite bg-white overflow-hidden card-hover"
@@ -87,7 +101,7 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
               onChange={(e) => patchProject(project.id, { name: e.target.value })}
               placeholder="Название проекта"
             />
-            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
+            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer shrink-0">
               <input
                 type="checkbox"
                 checked={project.excludeFromGrowth}
@@ -97,24 +111,55 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
               />
               Не в приросте
             </label>
-            <div className="flex items-center gap-2">
-              <span className="mono-tag text-[9px] uppercase text-muted">M−1, ₽</span>
-              <NumInput
-                value={project.budgetPreviousMonthRub}
-                onChange={(v) => patchProject(project.id, { budgetPreviousMonthRub: v })}
-                className="w-28"
-              />
-            </div>
             {workspace.projects.length > 1 && (
               <button
                 type="button"
                 onClick={() => removeProject(project.id)}
-                className="text-xs text-red-600 hover:underline"
+                className="text-xs text-red-600 hover:underline shrink-0"
               >
                 Удалить
               </button>
             )}
           </div>
+
+          <div className="px-4 py-3 bg-violet-50 border-b-2 border-violet-200">
+            <p className="mono-tag text-[9px] uppercase tracking-wider text-violet-800 mb-2">
+              Прирост бюджета · прошлый месяц ({formatMonthRu(prevKey)})
+            </p>
+            <div className="flex flex-wrap items-end gap-4">
+              <label className="flex flex-col gap-1 min-w-[200px] flex-1">
+                <span className="text-xs font-semibold text-graphite">
+                  Открут за {formatMonthRu(prevKey)}, ₽
+                </span>
+                <span className="text-[10px] text-muted leading-snug">
+                  Сумма по проекту в прошлом месяце — для сравнения с текущим
+                </span>
+                <NumInput
+                  value={project.budgetPreviousMonthRub}
+                  onChange={(v) => patchProject(project.id, { budgetPreviousMonthRub: v })}
+                  className="w-full max-w-xs border-violet-300 bg-white"
+                />
+              </label>
+              <div className="text-xs space-y-1 pb-1">
+                <p>
+                  <span className="text-muted">Текущий месяц ({formatMonthRu(workspace.month)}):</span>{' '}
+                  <strong>{formatRub(currentSpend)}</strong>
+                  <span className="text-muted text-[10px]"> (Н1+Н2)</span>
+                </p>
+                <p className={inGrowth ? 'text-emerald-700' : 'text-amber-700'}>
+                  {inGrowth
+                    ? '✓ Участвует в расчёте прироста'
+                    : project.excludeFromGrowth
+                      ? '— Исключён из прироста'
+                      : '— Нужны открут в обоих месяцах'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="mono-tag text-[9px] uppercase tracking-wider text-muted px-4 pt-3 pb-1">
+            Текущий месяц · {formatMonthRu(workspace.month)}
+          </p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm min-w-[720px]">
@@ -122,10 +167,10 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
                 <tr className="mono-tag text-[9px] uppercase tracking-wider text-muted border-b border-graphite/20">
                   <th className="p-3 bg-[#e8f5e9]">Воронка / KPI</th>
                   <th className="p-3">KPI план, ₽</th>
-                  <th className="p-3 bg-[#fff8e1]">H1 бюджет</th>
-                  <th className="p-3 bg-[#fff8e1]">H1 лиды</th>
-                  <th className="p-3 bg-[#e3f2fd]">H2 бюджет</th>
-                  <th className="p-3 bg-[#e3f2fd]">H2 лиды</th>
+                  <th className="p-3 bg-[#fff8e1]">Н1 бюджет · 1–14</th>
+                  <th className="p-3 bg-[#fff8e1]">Н1 лиды</th>
+                  <th className="p-3 bg-[#e3f2fd]">Н2 бюджет · 15–31</th>
+                  <th className="p-3 bg-[#e3f2fd]">Н2 лиды</th>
                   <th className="p-3 w-10" />
                 </tr>
               </thead>
@@ -153,7 +198,7 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
             </button>
           </div>
         </div>
-      ))}
+      )})}
     </div>
   )
 }
