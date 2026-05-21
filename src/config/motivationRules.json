@@ -1,0 +1,40 @@
+{
+  "$schema": "Правила мотивации таргетологов ВК с 01.03.2026 — пороги зашиты в код",
+  "salaryCapRub": 350000,
+  "kpiNormMaxPercent": 105,
+  "growthNormMinPercent": 90,
+  "leadCoefTiers": [
+    {
+      "id": "lead_green",
+      "label": "Цена лида ≤ 105% от KPI",
+      "maxKpiPercentInclusive": 105,
+      "coefPercent": 3
+    },
+    {
+      "id": "lead_red",
+      "label": "Цена лида > 105% от KPI",
+      "maxKpiPercentInclusive": null,
+      "coefPercent": 2
+    }
+  ],
+  "growthCoefTiers": [
+    {
+      "id": "growth_top",
+      "label": "Прирост ≥ 90%",
+      "minGrowthPercentInclusive": 90,
+      "coefPercent": 2.5
+    },
+    {
+      "id": "growth_mid",
+      "label": "Прирост 65%–89%",
+      "minGrowthPercentInclusive": 65,
+      "coefPercent": 2
+    },
+    {
+      "id": "growth_low",
+      "label": "Прирост < 65%",
+      "minGrowthPercentInclusive": 0,
+      "coefPercent": 1.5
+    }
+  ]
+}

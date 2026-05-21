@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  background-color: #f7f7f6;
+  color: #1a1a1a;
+}
+
+@layer utilities {
+  .display-head {
+    @apply font-black tracking-tighter;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.05;
+  }
+
+  .hero-num {
+    @apply font-black tracking-tighter;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1;
+  }
+
+  .mono-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+}
+
+.card-hover {
+  transition:
+    box-shadow 150ms ease-in-out,
+    transform 150ms ease-in-out;
+}
+.card-hover:hover {
+  box-shadow: 4px 4px 0 #1a1a1a;
+  transform: translateY(-2px);
+}
+
+.pb-track {
+  height: 8px;
+  border: 1.5px solid #1a1a1a;
+  border-radius: 3px;
+  background: rgba(26, 26, 26, 0.07);
+  overflow: hidden;
+}
+
+.pb-fill {
+  height: 100%;
+}
+
+input[type='number'] {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8125rem;
+}
+
+.zone-green {
+  background: #ecfdf5;
+  border-color: #059669;
+}
+.zone-yellow {
+  background: #fffbeb;
+  border-color: #d97706;
+}
+.zone-red {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
