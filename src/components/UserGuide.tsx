@@ -36,6 +36,10 @@ export default function UserGuide({ currentMonth }: Props) {
               карточки проекта (Аспро).
             </li>
             <li>
+              <strong className="text-graphite">KPI лиды</strong> — плановое число лидов (справа от
+              KPI плана). Подсказка: плановый бюджет = план × лиды.
+            </li>
+            <li>
               <strong className="text-graphite">Н1</strong> (жёлтые колонки) — открут и лиды за{' '}
               <strong>1–14 число</strong>.
             </li>

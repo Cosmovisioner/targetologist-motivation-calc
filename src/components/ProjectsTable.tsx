@@ -167,6 +167,7 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
                 <tr className="mono-tag text-[9px] uppercase tracking-wider text-muted border-b border-graphite/20">
                   <th className="p-3 bg-[#e8f5e9]">Воронка / KPI</th>
                   <th className="p-3">KPI план, ₽</th>
+                  <th className="p-3 bg-[#f3e8ff]">KPI лиды</th>
                   <th className="p-3 bg-[#fff8e1]">Н1 бюджет · 1–14</th>
                   <th className="p-3 bg-[#fff8e1]">Н1 лиды</th>
                   <th className="p-3 bg-[#e3f2fd]">Н2 бюджет · 15–31</th>
@@ -237,6 +238,18 @@ function KpiRow({
       </td>
       <td className="p-2">
         <NumInput value={line.kpiPlanRub} onChange={(v) => onPatch({ kpiPlanRub: v })} />
+      </td>
+      <td className="p-2 bg-[#faf5ff]">
+        <NumInput
+          value={line.kpiPlanLeads}
+          onChange={(v) => onPatch({ kpiPlanLeads: v })}
+          integer
+        />
+        {line.kpiPlanRub > 0 && line.kpiPlanLeads > 0 && (
+          <p className="mono-tag text-[9px] text-muted mt-1">
+            план бюджет {formatRub(line.kpiPlanRub * line.kpiPlanLeads)}
+          </p>
+        )}
       </td>
       <td className="p-2">
         <NumInput

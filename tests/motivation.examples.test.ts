@@ -22,6 +22,7 @@ function line(
     id: 'l1',
     label: 'Воронка',
     kpiPlanRub: kpiPlan,
+    kpiPlanLeads: 0,
     h1: { budgetFactRub: budgetH1, leads: leadsH1 || 1 },
     h2: { budgetFactRub: budgetH2, leads: leadsH2 || 1 },
   }

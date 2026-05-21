@@ -8,6 +8,7 @@ export function defaultKpiLine(): KpiLine {
     id: uid(),
     label: 'Воронка 1',
     kpiPlanRub: 0,
+    kpiPlanLeads: 0,
     h1: { budgetFactRub: 0, leads: 0 },
     h2: { budgetFactRub: 0, leads: 0 },
   }
@@ -41,7 +42,16 @@ export function loadWorkspace(): MonthWorkspace {
     if (!parsed.month || !Array.isArray(parsed.projects)) {
       return defaultWorkspace()
     }
-    return parsed
+    return {
+      ...parsed,
+      projects: parsed.projects.map((p) => ({
+        ...p,
+        kpiLines: p.kpiLines.map((l) => ({
+          ...l,
+          kpiPlanLeads: l.kpiPlanLeads ?? 0,
+        })),
+      })),
+    }
   } catch {
     return defaultWorkspace()
   }
