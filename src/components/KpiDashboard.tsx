@@ -98,6 +98,7 @@ export default function KpiDashboard({ workspace }: Props) {
       <div className="px-5 py-3 bg-ivory/80 border-b border-graphite/10 text-xs text-muted font-mono leading-relaxed">
         <strong className="text-graphite font-sans">Формула:</strong> факт CPL = бюджет ÷ лиды · % от
         KPI = (факт CPL ÷ KPI план) × 100 · вес = бюджет строки ÷ Σ бюджет ·{' '}
+        <strong className="text-graphite">цена лида = бюджет ÷ лиды</strong> ·{' '}
         <strong className="text-graphite">итог = Σ (% от KPI × вес)</strong>
       </div>
 
@@ -107,8 +108,7 @@ export default function KpiDashboard({ workspace }: Props) {
             <tr className="mono-tag text-[9px] uppercase tracking-wider text-muted border-b border-graphite/20">
               <th className="p-3 text-left">Проект</th>
               <th className="p-3 text-left">Воронка</th>
-              <th className="p-3 text-right">KPI план</th>
-              <th className="p-3 text-right">KPI лиды</th>
+              <th className="p-3 text-right">KPI цена</th>
               <th className="p-3 text-right">Бюджет</th>
               <th className="p-3 text-right">Лиды</th>
               <th className="p-3 text-right">Факт CPL</th>
@@ -120,7 +120,7 @@ export default function KpiDashboard({ workspace }: Props) {
           <tbody>
             {lines.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-6 text-center text-muted">
+                <td colSpan={9} className="p-6 text-center text-muted">
                   Нет строк — добавь проект и воронку
                 </td>
               </tr>
@@ -131,7 +131,7 @@ export default function KpiDashboard({ workspace }: Props) {
           {lines.length > 0 && aggregate !== null && (
             <tfoot>
               <tr className="border-t-2 border-graphite bg-[#e8f5e9] font-semibold">
-                <td colSpan={7} className="p-3 text-right mono-tag text-[10px] uppercase">
+                <td colSpan={6} className="p-3 text-right mono-tag text-[10px] uppercase">
                   Итог KPI (средневзвешенный)
                 </td>
                 <td className="p-3 text-right">
@@ -161,10 +161,7 @@ function KpiRow({ row }: { row: LinePeriodMetrics }) {
       <td className="p-2 font-medium">{row.projectName}</td>
       <td className="p-2 text-muted">{row.label}</td>
       <td className="p-2 text-right font-mono text-xs">
-        {row.kpiPlanRub > 0 ? formatRub(row.kpiPlanRub) : '—'}
-      </td>
-      <td className="p-2 text-right font-mono text-xs">
-        {row.kpiPlanLeads > 0 ? row.kpiPlanLeads : '—'}
+        {row.kpiPriceRub > 0 ? formatRub(row.kpiPriceRub) : '—'}
       </td>
       <td className="p-2 text-right font-mono text-xs">{formatRub(row.budgetRub)}</td>
       <td className="p-2 text-right font-mono text-xs">{row.leads || '—'}</td>

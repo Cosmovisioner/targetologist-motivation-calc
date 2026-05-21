@@ -3,12 +3,21 @@ import { uid } from '../lib/format'
 
 const STORAGE_KEY = 'targetologist-motivation-workspace'
 
+type LegacyKpiLine = KpiLine & { kpiPlanRub?: number; kpiPlanLeads?: number }
+
+function normalizeLine(raw: LegacyKpiLine): KpiLine {
+  const { kpiPlanRub, kpiPlanLeads: _drop, ...rest } = raw
+  return {
+    ...rest,
+    kpiPriceRub: rest.kpiPriceRub ?? kpiPlanRub ?? 0,
+  }
+}
+
 export function defaultKpiLine(): KpiLine {
   return {
     id: uid(),
     label: 'Воронка 1',
-    kpiPlanRub: 0,
-    kpiPlanLeads: 0,
+    kpiPriceRub: 0,
     h1: { budgetFactRub: 0, leads: 0 },
     h2: { budgetFactRub: 0, leads: 0 },
   }
@@ -46,10 +55,7 @@ export function loadWorkspace(): MonthWorkspace {
       ...parsed,
       projects: parsed.projects.map((p) => ({
         ...p,
-        kpiLines: p.kpiLines.map((l) => ({
-          ...l,
-          kpiPlanLeads: l.kpiPlanLeads ?? 0,
-        })),
+        kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
       })),
     }
   } catch {
@@ -79,5 +85,11 @@ export async function importJson(file: File): Promise<MonthWorkspace> {
   if (!parsed.month || !Array.isArray(parsed.projects)) {
     throw new Error('Неверный формат файла')
   }
-  return parsed
+  return {
+    ...parsed,
+    projects: parsed.projects.map((p) => ({
+      ...p,
+      kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
+    })),
+  }
 }

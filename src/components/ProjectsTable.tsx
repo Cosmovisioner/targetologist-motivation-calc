@@ -1,8 +1,10 @@
 import type { KpiLine, MonthWorkspace, Project } from '../lib/motivation/types'
 import { aggregateKpiPercent, growthMatchedProjects } from '../lib/motivation/calculate'
+import { factCplRub, pctOfKpi } from '../lib/motivation/cpl'
 import { formatMonthRu, previousMonthKey } from '../lib/monthLabel'
 import { defaultKpiLine, defaultProject } from '../store/workspace'
 import { formatPct, formatRub, parseNum, uid } from '../lib/format'
+import { kpiZone } from '../lib/motivation/rules'
 
 function projectMonthSpend(project: Project): number {
   return project.kpiLines.reduce(
@@ -90,116 +92,116 @@ export default function ProjectsTable({ workspace, onChange }: Props) {
         const inGrowth = matchedIds.has(project.id)
 
         return (
-        <div
-          key={project.id}
-          className="rounded-[20px] border border-graphite bg-white overflow-hidden card-hover"
-        >
-          <div className="flex flex-wrap items-center gap-3 border-b border-graphite/15 bg-ivory px-4 py-3">
-            <input
-              className="flex-1 min-w-[160px] font-semibold bg-transparent border-b border-transparent focus:border-graphite outline-none"
-              value={project.name}
-              onChange={(e) => patchProject(project.id, { name: e.target.value })}
-              placeholder="Название проекта"
-            />
-            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer shrink-0">
+          <div
+            key={project.id}
+            className="rounded-[20px] border border-graphite bg-white overflow-hidden card-hover"
+          >
+            <div className="flex flex-wrap items-center gap-3 border-b border-graphite/15 bg-ivory px-4 py-3">
               <input
-                type="checkbox"
-                checked={project.excludeFromGrowth}
-                onChange={(e) =>
-                  patchProject(project.id, { excludeFromGrowth: e.target.checked })
-                }
+                className="flex-1 min-w-[160px] font-semibold bg-transparent border-b border-transparent focus:border-graphite outline-none"
+                value={project.name}
+                onChange={(e) => patchProject(project.id, { name: e.target.value })}
+                placeholder="Название проекта"
               />
-              Не в приросте
-            </label>
-            {workspace.projects.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeProject(project.id)}
-                className="text-xs text-red-600 hover:underline shrink-0"
-              >
-                Удалить
-              </button>
-            )}
-          </div>
-
-          <div className="px-4 py-3 bg-violet-50 border-b-2 border-violet-200">
-            <p className="mono-tag text-[9px] uppercase tracking-wider text-violet-800 mb-2">
-              Прирост бюджета · прошлый месяц ({formatMonthRu(prevKey)})
-            </p>
-            <div className="flex flex-wrap items-end gap-4">
-              <label className="flex flex-col gap-1 min-w-[200px] flex-1">
-                <span className="text-xs font-semibold text-graphite">
-                  Открут за {formatMonthRu(prevKey)}, ₽
-                </span>
-                <span className="text-[10px] text-muted leading-snug">
-                  Сумма по проекту в прошлом месяце — для сравнения с текущим
-                </span>
-                <NumInput
-                  value={project.budgetPreviousMonthRub}
-                  onChange={(v) => patchProject(project.id, { budgetPreviousMonthRub: v })}
-                  className="w-full max-w-xs border-violet-300 bg-white"
+              <label className="flex items-center gap-2 text-xs text-muted cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={project.excludeFromGrowth}
+                  onChange={(e) =>
+                    patchProject(project.id, { excludeFromGrowth: e.target.checked })
+                  }
                 />
+                Не в приросте
               </label>
-              <div className="text-xs space-y-1 pb-1">
-                <p>
-                  <span className="text-muted">Текущий месяц ({formatMonthRu(workspace.month)}):</span>{' '}
-                  <strong>{formatRub(currentSpend)}</strong>
-                  <span className="text-muted text-[10px]"> (Н1+Н2)</span>
-                </p>
-                <p className={inGrowth ? 'text-emerald-700' : 'text-amber-700'}>
-                  {inGrowth
-                    ? '✓ Участвует в расчёте прироста'
-                    : project.excludeFromGrowth
-                      ? '— Исключён из прироста'
-                      : '— Нужны открут в обоих месяцах'}
-                </p>
+              {workspace.projects.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeProject(project.id)}
+                  className="text-xs text-red-600 hover:underline shrink-0"
+                >
+                  Удалить
+                </button>
+              )}
+            </div>
+
+            <div className="px-4 py-3 bg-violet-50 border-b-2 border-violet-200">
+              <p className="mono-tag text-[9px] uppercase tracking-wider text-violet-800 mb-2">
+                Прирост бюджета · прошлый месяц ({formatMonthRu(prevKey)})
+              </p>
+              <div className="flex flex-wrap items-end gap-4">
+                <label className="flex flex-col gap-1 min-w-[200px] flex-1">
+                  <span className="text-xs font-semibold text-graphite">
+                    Открут за {formatMonthRu(prevKey)}, ₽
+                  </span>
+                  <NumInput
+                    value={project.budgetPreviousMonthRub}
+                    onChange={(v) => patchProject(project.id, { budgetPreviousMonthRub: v })}
+                    className="w-full max-w-xs border-violet-300 bg-white"
+                  />
+                </label>
+                <div className="text-xs space-y-1 pb-1">
+                  <p>
+                    <span className="text-muted">
+                      Текущий месяц ({formatMonthRu(workspace.month)}):
+                    </span>{' '}
+                    <strong>{formatRub(currentSpend)}</strong>
+                  </p>
+                  <p className={inGrowth ? 'text-emerald-700' : 'text-amber-700'}>
+                    {inGrowth
+                      ? '✓ Участвует в расчёте прироста'
+                      : project.excludeFromGrowth
+                        ? '— Исключён из прироста'
+                        : '— Нужны открут в обоих месяцах'}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <p className="mono-tag text-[9px] uppercase tracking-wider text-muted px-4 pt-3 pb-1">
-            Текущий месяц · {formatMonthRu(workspace.month)}
-          </p>
+            <p className="mono-tag text-[9px] uppercase tracking-wider text-muted px-4 pt-3 pb-1">
+              Текущий месяц · {formatMonthRu(workspace.month)}
+            </p>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm min-w-[720px]">
-              <thead>
-                <tr className="mono-tag text-[9px] uppercase tracking-wider text-muted border-b border-graphite/20">
-                  <th className="p-3 bg-[#e8f5e9]">Воронка / KPI</th>
-                  <th className="p-3">KPI план, ₽</th>
-                  <th className="p-3 bg-[#f3e8ff]">KPI лиды</th>
-                  <th className="p-3 bg-[#fff8e1]">Н1 бюджет · 1–14</th>
-                  <th className="p-3 bg-[#fff8e1]">Н1 лиды</th>
-                  <th className="p-3 bg-[#e3f2fd]">Н2 бюджет · 15–31</th>
-                  <th className="p-3 bg-[#e3f2fd]">Н2 лиды</th>
-                  <th className="p-3 w-10" />
-                </tr>
-              </thead>
-              <tbody>
-                {project.kpiLines.map((line) => (
-                  <KpiRow
-                    key={line.id}
-                    line={line}
-                    onPatch={(patch) => patchLine(project.id, line.id, patch)}
-                    onRemove={() => removeLine(project.id, line.id)}
-                    canRemove={project.kpiLines.length > 1}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm min-w-[960px]">
+                <thead>
+                  <tr className="mono-tag text-[9px] uppercase tracking-wider text-muted border-b border-graphite/20">
+                    <th className="p-3 bg-[#e8f5e9]">Воронка / KPI</th>
+                    <th className="p-3 bg-[#f3e8ff]">KPI цена, ₽</th>
+                    <th className="p-3 bg-[#fff8e1]">Н1 бюджет</th>
+                    <th className="p-3 bg-[#fff8e1]">Н1 лиды</th>
+                    <th className="p-3 bg-[#fff8e1]">Н1 цена лида</th>
+                    <th className="p-3 bg-[#e3f2fd]">Н2 бюджет</th>
+                    <th className="p-3 bg-[#e3f2fd]">Н2 лиды</th>
+                    <th className="p-3 bg-[#e3f2fd]">Н2 цена лида</th>
+                    <th className="p-3 w-10" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {project.kpiLines.map((line) => (
+                    <KpiRow
+                      key={line.id}
+                      line={line}
+                      onPatch={(patch) => patchLine(project.id, line.id, patch)}
+                      onRemove={() => removeLine(project.id, line.id)}
+                      canRemove={project.kpiLines.length > 1}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-          <div className="px-4 py-2 border-t border-graphite/10">
-            <button
-              type="button"
-              onClick={() => addLine(project.id)}
-              className="text-xs font-semibold text-accent hover:underline"
-            >
-              + KPI / воронка
-            </button>
+            <div className="px-4 py-2 border-t border-graphite/10">
+              <button
+                type="button"
+                onClick={() => addLine(project.id)}
+                className="text-xs font-semibold text-accent hover:underline"
+              >
+                + KPI / воронка
+              </button>
+            </div>
           </div>
-        </div>
-      )})}
+        )
+      })}
     </div>
   )
 }
@@ -215,14 +217,10 @@ function KpiRow({
   onRemove: () => void
   canRemove: boolean
 }) {
-  const cplH1 =
-    line.h1.leads > 0 ? line.h1.budgetFactRub / line.h1.leads : null
-  const cplH2 =
-    line.h2.leads > 0 ? line.h2.budgetFactRub / line.h2.leads : null
-  const pctH1 =
-    cplH1 !== null && line.kpiPlanRub > 0 ? (cplH1 / line.kpiPlanRub) * 100 : null
-  const pctH2 =
-    cplH2 !== null && line.kpiPlanRub > 0 ? (cplH2 / line.kpiPlanRub) * 100 : null
+  const cplH1 = factCplRub(line.h1.budgetFactRub, line.h1.leads)
+  const cplH2 = factCplRub(line.h2.budgetFactRub, line.h2.leads)
+  const pctH1 = pctOfKpi(cplH1, line.kpiPriceRub)
+  const pctH2 = pctOfKpi(cplH2, line.kpiPriceRub)
 
   return (
     <tr className="border-b border-dashed border-graphite/15 hover:bg-ivory/50">
@@ -233,23 +231,14 @@ function KpiRow({
           onChange={(e) => onPatch({ label: e.target.value })}
         />
         <p className="mono-tag text-[9px] text-muted mt-1 px-1">
-          CPL: {formatPct(pctH1)} / {formatPct(pctH2)}
+          % KPI: {formatPct(pctH1)} / {formatPct(pctH2)}
         </p>
-      </td>
-      <td className="p-2">
-        <NumInput value={line.kpiPlanRub} onChange={(v) => onPatch({ kpiPlanRub: v })} />
       </td>
       <td className="p-2 bg-[#faf5ff]">
         <NumInput
-          value={line.kpiPlanLeads}
-          onChange={(v) => onPatch({ kpiPlanLeads: v })}
-          integer
+          value={line.kpiPriceRub}
+          onChange={(v) => onPatch({ kpiPriceRub: v })}
         />
-        {line.kpiPlanRub > 0 && line.kpiPlanLeads > 0 && (
-          <p className="mono-tag text-[9px] text-muted mt-1">
-            план бюджет {formatRub(line.kpiPlanRub * line.kpiPlanLeads)}
-          </p>
-        )}
       </td>
       <td className="p-2">
         <NumInput
@@ -265,6 +254,9 @@ function KpiRow({
         />
       </td>
       <td className="p-2">
+        <CalcCell valueRub={cplH1} pct={pctH1} />
+      </td>
+      <td className="p-2">
         <NumInput
           value={line.h2.budgetFactRub}
           onChange={(v) => onPatch({ h2: { ...line.h2, budgetFactRub: v } })}
@@ -278,6 +270,9 @@ function KpiRow({
         />
       </td>
       <td className="p-2">
+        <CalcCell valueRub={cplH2} pct={pctH2} />
+      </td>
+      <td className="p-2">
         {canRemove && (
           <button type="button" onClick={onRemove} className="text-muted hover:text-red-600">
             ×
@@ -285,6 +280,22 @@ function KpiRow({
         )}
       </td>
     </tr>
+  )
+}
+
+function CalcCell({ valueRub, pct }: { valueRub: number | null; pct: number | null }) {
+  const zone = pct !== null ? kpiZone(pct) : 'yellow'
+  const zoneCls =
+    zone === 'green' ? 'zone-green' : zone === 'red' ? 'zone-red' : 'bg-graphite/5'
+  return (
+    <div className={`rounded-md border px-2 py-1.5 ${zoneCls}`}>
+      <p className="font-mono text-xs font-semibold text-graphite">
+        {valueRub !== null ? formatRub(valueRub) : '—'}
+      </p>
+      <p className="mono-tag text-[9px] text-muted mt-0.5">
+        {pct !== null ? formatPct(pct) : 'бюджет ÷ лиды'}
+      </p>
+    </div>
   )
 }
 

@@ -11,9 +11,9 @@ export default function FormulasSheet() {
         <section>
           <p className="font-sans font-bold text-xs uppercase text-muted mb-2">Ячейки ввода</p>
           <ul className="list-disc pl-5 space-y-1 font-sans text-graphite">
-            <li>KPI план — плановая цена лида, ₽</li>
-            <li>H1/H2 бюджет — факт открута за 1–14 и 15–31</li>
-            <li>H1/H2 лиды — количество лидов за период</li>
+            <li>KPI цена — плановая цена лида, ₽</li>
+            <li>Н1/Н2 бюджет и лиды — факт за половину месяца</li>
+            <li>Н1/Н2 цена лида — авто: бюджет ÷ лиды</li>
             <li>M−1 открут — прошлый месяц по проекту (для прироста)</li>
           </ul>
         </section>
@@ -21,7 +21,7 @@ export default function FormulasSheet() {
         <section>
           <p className="font-sans font-bold text-xs uppercase text-muted mb-2">Расчётные</p>
           <p>factCpl = budgetFact / leads</p>
-          <p>pctOfKpi = (factCpl / kpiPlan) × 100</p>
+          <p>pctOfKpi = (factCpl / KPI цена) × 100</p>
           <p>weight = budget линии / Σ budget периода</p>
           <p className="font-bold text-accent">aggregateKpi = Σ (pctOfKpi × weight)</p>
         </section>

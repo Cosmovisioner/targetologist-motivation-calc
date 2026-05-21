@@ -9,10 +9,8 @@ export interface PeriodInput {
 export interface KpiLine {
   id: string
   label: string
-  /** Плановая цена лида (KPI из карточки проекта), ₽ */
-  kpiPlanRub: number
-  /** Плановое количество лидов по KPI (из карточки / план на месяц) */
-  kpiPlanLeads: number
+  /** KPI цена лида (план из карточки проекта), ₽ */
+  kpiPriceRub: number
   h1: PeriodInput
   h2: PeriodInput
 }
@@ -37,8 +35,7 @@ export interface LinePeriodMetrics {
   projectId: string
   projectName: string
   label: string
-  kpiPlanRub: number
-  kpiPlanLeads: number
+  kpiPriceRub: number
   budgetRub: number
   leads: number
   factCplRub: number | null

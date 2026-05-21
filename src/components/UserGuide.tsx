@@ -32,23 +32,18 @@ export default function UserGuide({ currentMonth }: Props) {
         <Step n={3} title="Заполни таблицу за текущий месяц">
           <ul className="list-disc pl-5 mt-2 space-y-1 text-muted">
             <li>
-              <strong className="text-graphite">KPI план, ₽</strong> — плановая цена лида из
-              карточки проекта (Аспро).
+              <strong className="text-graphite">KPI цена, ₽</strong> — плановая цена лида из Аспро
+              (ввод).
             </li>
             <li>
-              <strong className="text-graphite">KPI лиды</strong> — плановое число лидов (справа от
-              KPI плана). Подсказка: плановый бюджет = план × лиды.
+              <strong className="text-graphite">Н1 / Н2 бюджет и лиды</strong> — факт за 1–14 и
+              15–31 (ввод).
             </li>
             <li>
-              <strong className="text-graphite">Н1</strong> (жёлтые колонки) — открут и лиды за{' '}
-              <strong>1–14 число</strong>.
-            </li>
-            <li>
-              <strong className="text-graphite">Н2</strong> (голубые) — открут и лиды за{' '}
-              <strong>15–31 число</strong>.
+              <strong className="text-graphite">Н1 / Н2 цена лида</strong> — считается само: бюджет
+              ÷ лиды; ниже % от KPI.
             </li>
           </ul>
-          CPL и % от KPI по строке считаются сами (подпись под названием воронки).
         </Step>
 
         <Step
