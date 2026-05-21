@@ -76,8 +76,17 @@ export default function UserGuide({ currentMonth }: Props) {
           </ul>
         </Step>
 
-        <Step n={5} title="Смотри итог справа">
+        <Step n={5} title="Блок KPI · цена лида (зелёная секция)">
+          После ввода данных открой таблицу <strong>KPI · цена лида</strong>: вкладки Н1, Н2 или
+          Месяц. Там видно по каждой воронке: факт CPL, % от KPI, вес и вклад в итог.{' '}
+          <strong>Итог KPI ≤ 105%</strong> — зелёная зона (максимальный коэф. за лид 3%).
+        </Step>
+
+        <Step n={6} title="Смотри итог справа">
           <ul className="list-disc pl-5 mt-2 space-y-1 text-muted">
+            <li>
+              <strong>KPI · сводка</strong> — итог % и коэф. за Н1 и Н2.
+            </li>
             <li>
               <strong>CPL 1 · 1–14</strong> и <strong>CPL 2 · 15–31</strong> — зарплата за лид по
               половинам месяца.

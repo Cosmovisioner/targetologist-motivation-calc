@@ -35,6 +35,7 @@ export interface LinePeriodMetrics {
   projectId: string
   projectName: string
   label: string
+  kpiPlanRub: number
   budgetRub: number
   leads: number
   factCplRub: number | null

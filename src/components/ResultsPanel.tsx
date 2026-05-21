@@ -55,14 +55,28 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
         </div>
       </div>
 
+      <div className="rounded-[20px] border-2 border-[#a5d6a7] bg-[#e8f5e9] p-4 space-y-2">
+        <p className="mono-tag text-[9px] uppercase tracking-widest text-graphite/80">
+          KPI · сводка
+        </p>
+        <div className="grid grid-cols-2 gap-2 text-center">
+          <MiniKpi label="Н1" pct={salary.h1.aggregateKpiPercent} coef={salary.h1.leadCoefPercent} />
+          <MiniKpi label="Н2" pct={salary.h2.aggregateKpiPercent} coef={salary.h2.leadCoefPercent} />
+        </div>
+        <p className="text-[10px] text-muted text-center">
+          Норма ≤ {MOTIVATION_RULES.kpiNormMaxPercent}% · детали в блоке KPI выше
+        </p>
+      </div>
+
       <div className="rounded-[20px] border border-graphite bg-ivory p-4 space-y-3 card-hover">
         <p className="mono-tag text-[9px] uppercase tracking-widest text-muted">
-          Разбивка (формулы в коде)
+          Выплата по мотивации
         </p>
 
         <ResultRow
           title="CPL 1 · 1–14"
-          kpi={salary.h1.aggregateKpiPercent}
+          metricLabel="Сводный % лида"
+          metric={salary.h1.aggregateKpiPercent}
           coef={salary.h1.leadCoefPercent}
           spend={salary.h1.totalBudgetRub}
           payout={salary.h1.payoutRub}
@@ -71,7 +85,8 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
         />
         <ResultRow
           title="CPL 2 · 15–31"
-          kpi={salary.h2.aggregateKpiPercent}
+          metricLabel="Сводный % лида"
+          metric={salary.h2.aggregateKpiPercent}
           coef={salary.h2.leadCoefPercent}
           spend={salary.h2.totalBudgetRub}
           payout={salary.h2.payoutRub}
@@ -80,7 +95,8 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
         />
         <ResultRow
           title="Прирост бюджета"
-          kpi={salary.growth.growthPercent}
+          metricLabel="Прирост"
+          metric={salary.growth.growthPercent}
           coef={salary.growth.growthCoefPercent}
           spend={salary.growth.monthTotalBudgetRub}
           payout={salary.growth.payoutRub}
@@ -103,9 +119,29 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
   )
 }
 
+function MiniKpi({
+  label,
+  pct,
+  coef,
+}: {
+  label: string
+  pct: number | null
+  coef: number
+}) {
+  const zone = pct !== null ? kpiZone(pct) : 'yellow'
+  return (
+    <div className={`rounded-lg border p-2 ${zoneClass(zone)}`}>
+      <p className="mono-tag text-[9px] uppercase">{label}</p>
+      <p className="font-mono font-bold text-lg">{formatPct(pct)}</p>
+      <p className="text-[10px] opacity-80">коэф {coef}%</p>
+    </div>
+  )
+}
+
 function ResultRow({
   title,
-  kpi,
+  metricLabel,
+  metric,
   coef,
   spend,
   payout,
@@ -114,7 +150,8 @@ function ResultRow({
   sub,
 }: {
   title: string
-  kpi: number | null
+  metricLabel: string
+  metric: number | null
   coef: number
   spend: number
   payout: number
@@ -129,7 +166,7 @@ function ResultRow({
         <span className="mono-tag text-sm">{formatRub(payout)}</span>
       </div>
       <p className="mono-tag text-[10px] text-graphite/80">
-        KPI {formatPct(kpi)} · коэф {coef}% · открут {formatRub(spend)}
+        {metricLabel} {formatPct(metric)} · коэф {coef}% · открут {formatRub(spend)}
       </p>
       <p className="text-[10px] mt-1 opacity-70">{formula}</p>
       {sub && <p className="text-[10px] mt-1 opacity-70">{sub}</p>}

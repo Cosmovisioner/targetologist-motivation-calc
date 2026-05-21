@@ -44,7 +44,7 @@ function monthBudget(project: Project): number {
   return projectBudgetInHalf(project, 'h1') + projectBudgetInHalf(project, 'h2')
 }
 
-function collectLines(workspace: MonthWorkspace, half: Half): LinePeriodMetrics[] {
+export function collectLines(workspace: MonthWorkspace, half: Half): LinePeriodMetrics[] {
   const rows: LinePeriodMetrics[] = []
   for (const project of workspace.projects) {
     for (const line of project.kpiLines) {
@@ -54,6 +54,7 @@ function collectLines(workspace: MonthWorkspace, half: Half): LinePeriodMetrics[
         projectId: project.id,
         projectName: project.name,
         label: line.label,
+        kpiPlanRub: line.kpiPlanRub,
         budgetRub: p.budgetFactRub,
         leads: p.leads,
         factCplRub: null,
@@ -86,6 +87,64 @@ function collectLines(workspace: MonthWorkspace, half: Half): LinePeriodMetrics[
       weightedContribution,
     }
   })
+}
+
+/** Строки KPI за весь месяц (Н1+Н2 по каждой воронке) — для ориентира, не для коэф. ЗП */
+export function collectLinesFullMonth(workspace: MonthWorkspace): LinePeriodMetrics[] {
+  const rows: LinePeriodMetrics[] = []
+  for (const project of workspace.projects) {
+    for (const line of project.kpiLines) {
+      const budgetRub = line.h1.budgetFactRub + line.h2.budgetFactRub
+      const leads = line.h1.leads + line.h2.leads
+      rows.push({
+        lineId: line.id,
+        projectId: project.id,
+        projectName: project.name,
+        label: line.label,
+        kpiPlanRub: line.kpiPlanRub,
+        budgetRub,
+        leads,
+        factCplRub: null,
+        pctOfKpi: null,
+        weight: 0,
+        weightedContribution: 0,
+      })
+    }
+  }
+  const totalBudget = rows.reduce((s, r) => s + r.budgetRub, 0)
+  return rows.map((row) => {
+    const line = workspace.projects
+      .find((p) => p.id === row.projectId)!
+      .kpiLines.find((l) => l.id === row.lineId)!
+    const budgetRub = line.h1.budgetFactRub + line.h2.budgetFactRub
+    const leads = line.h1.leads + line.h2.leads
+    const factCpl =
+      leads > 0 && budgetRub > 0 ? budgetRub / leads : null
+    const pctOfKpi =
+      factCpl !== null && line.kpiPlanRub > 0
+        ? (factCpl / line.kpiPlanRub) * 100
+        : null
+    const weight = totalBudget > 0 ? budgetRub / totalBudget : 0
+    const weightedContribution =
+      pctOfKpi !== null ? pctOfKpi * weight : 0
+    return {
+      ...row,
+      budgetRub,
+      leads,
+      factCplRub: factCpl,
+      pctOfKpi,
+      weight,
+      weightedContribution,
+    }
+  })
+}
+
+export function aggregateKpiPercentFullMonth(workspace: MonthWorkspace): number | null {
+  const lines = collectLinesFullMonth(workspace)
+  const totalBudget = lines.reduce((s, r) => s + r.budgetRub, 0)
+  if (totalBudget <= 0) return null
+  if (!lines.some((r) => r.pctOfKpi !== null)) return null
+  return lines.reduce((s, r) => s + r.weightedContribution, 0)
 }
 
 /** Средневзвешенный % от KPI за половину месяца */
