@@ -18,6 +18,9 @@ export interface MotivationRules {
   salaryCapRub: number
   kpiNormMaxPercent: number
   growthNormMinPercent: number
+  vacationCoefPercent: number
+  vacationReplacerShare: number
+  vacationOwnerShare: number
   leadCoefTiers: LeadCoefTier[]
   growthCoefTiers: GrowthCoefTier[]
 }

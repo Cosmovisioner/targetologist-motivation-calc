@@ -3,6 +3,9 @@
   "salaryCapRub": 350000,
   "kpiNormMaxPercent": 105,
   "growthNormMinPercent": 90,
+  "vacationCoefPercent": 5.5,
+  "vacationReplacerShare": 0.6,
+  "vacationOwnerShare": 0.4,
   "leadCoefTiers": [
     {
       "id": "lead_green",

@@ -345,12 +345,17 @@ function NumInput({
     <input
       type="number"
       min={0}
-      step={integer ? 1 : 1000}
+      step={integer ? 1 : 0.01}
       className={`w-full px-2 py-1 border border-graphite/25 rounded-md ${className}`}
-      value={value || ''}
+      value={Number.isFinite(value) ? value : ''}
       onChange={(e) => {
-        const v = parseNum(e.target.value)
+        const v = parseNum(e.target.value, integer ? undefined : 2)
         onChange(integer ? Math.round(v) : v)
+      }}
+      onBlur={(e) => {
+        if (integer) return
+        const v = parseNum(e.target.value, 2)
+        onChange(v)
       }}
     />
   )

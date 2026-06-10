@@ -14,12 +14,14 @@
  * Итого = min(слагаемые, 350 000)
  */
 
+import { roundMoney } from '../format'
 import {
   growthCoefFromPercent,
   kpiZone,
   leadCoefFromAggregateKpi,
   MOTIVATION_RULES,
 } from './rules'
+import { calcVacation } from './vacation'
 import { effectiveLeadPriceRub, factCplRub, pctOfKpi as pctOfKpiPercent } from './cpl'
 import type {
   Half,
@@ -161,8 +163,9 @@ export function calcHalfPeriod(
   const aggregate = aggregateKpiPercent(workspace, half)
   const leadCoefPercent =
     aggregate !== null ? leadCoefFromAggregateKpi(aggregate) : 0
-  const payoutRub =
-    aggregate !== null ? (totalBudgetRub * leadCoefPercent) / 100 : 0
+  const payoutRub = roundMoney(
+    aggregate !== null ? (totalBudgetRub * leadCoefPercent) / 100 : 0,
+  )
 
   return {
     half,
@@ -208,10 +211,11 @@ export function calcGrowth(workspace: MonthWorkspace): GrowthResult {
   const growthCoefPercent =
     growthPercent !== null ? growthCoefFromPercent(growthPercent) : 0
 
-  const payoutRub =
+  const payoutRub = roundMoney(
     growthPercent !== null
       ? (monthTotalBudgetRub * growthCoefPercent) / 100
-      : 0
+      : 0,
+  )
 
   return {
     growthPercent,
@@ -228,9 +232,13 @@ export function calcSalary(workspace: MonthWorkspace): SalaryResult {
   const h1 = calcHalfPeriod(workspace, 'h1')
   const h2 = calcHalfPeriod(workspace, 'h2')
   const growth = calcGrowth(workspace)
-  const totalBeforeCapRub = h1.payoutRub + h2.payoutRub + growth.payoutRub
+  const totalBeforeCapRub = roundMoney(h1.payoutRub + h2.payoutRub + growth.payoutRub)
   const cap = MOTIVATION_RULES.salaryCapRub
-  const totalRub = Math.min(totalBeforeCapRub, cap)
+  const totalRub = roundMoney(Math.min(totalBeforeCapRub, cap))
+  const vacation = calcVacation(workspace)
+  const netTotalRub = roundMoney(
+    totalRub - (vacation?.replacerShareRub ?? 0),
+  )
 
   return {
     h1,
@@ -240,6 +248,8 @@ export function calcSalary(workspace: MonthWorkspace): SalaryResult {
     totalRub,
     capped: totalBeforeCapRub > cap,
     salaryCapRub: cap,
+    vacation,
+    netTotalRub,
   }
 }
 

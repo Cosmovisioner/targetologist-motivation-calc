@@ -13,9 +13,10 @@ function zoneClass(zone: 'green' | 'yellow' | 'red'): string {
 export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace }) {
   const salary = useMemo(() => calcSalary(workspace), [workspace])
 
+  const displayTotal = salary.vacation ? salary.netTotalRub : salary.totalRub
   const capPct =
     salary.salaryCapRub > 0
-      ? Math.min(100, (salary.totalRub / salary.salaryCapRub) * 100)
+      ? Math.min(100, (displayTotal / salary.salaryCapRub) * 100)
       : 0
 
   const h1Zone =
@@ -37,7 +38,20 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
         <p className="mono-tag text-[9px] uppercase tracking-[0.18em] text-graphite/70 mb-2">
           Итого к выплате
         </p>
-        <div className="hero-num text-4xl text-graphite">{formatRub(salary.totalRub)}</div>
+        <div className="hero-num text-4xl text-graphite">
+          {formatRub(salary.vacation ? salary.netTotalRub : salary.totalRub)}
+        </div>
+        {salary.vacation && (
+          <p className="text-xs text-graphite/80 mt-2">
+            Мотивация {formatRub(salary.totalRub)}
+            {salary.vacation.replacerShareRub > 0 && (
+              <>
+                {' '}
+                − замене {formatRub(salary.vacation.replacerShareRub)}
+              </>
+            )}
+          </p>
+        )}
         {salary.capped && (
           <p className="text-xs text-graphite/80 mt-2">
             До расчёта {formatRub(salary.totalBeforeCapRub)} — применён потолок{' '}
@@ -93,6 +107,25 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
           zone={h2Zone}
           formula="открут × коэф лида"
         />
+        {salary.vacation && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3">
+            <div className="flex justify-between items-baseline mb-1">
+              <span className="font-semibold text-sm text-graphite">Отпуск</span>
+              <span className="mono-tag text-sm text-amber-900">
+                −{formatRub(salary.vacation.replacerShareRub)}
+              </span>
+            </div>
+            <p className="mono-tag text-[10px] text-graphite/80">
+              Открут {formatRub(salary.vacation.vacationSpendRub)} · пул{' '}
+              {MOTIVATION_RULES.vacationCoefPercent}% = {formatRub(salary.vacation.vacationPoolRub)}
+            </p>
+            <p className="text-[10px] mt-1 opacity-70">
+              Ваша доля 40%: {formatRub(salary.vacation.yourVacationShareRub)} · замене 60%:{' '}
+              {formatRub(salary.vacation.replacerShareRub)}
+            </p>
+          </div>
+        )}
+
         <ResultRow
           title="Прирост бюджета"
           metricLabel="Прирост"

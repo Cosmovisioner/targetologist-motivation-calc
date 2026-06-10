@@ -1,4 +1,11 @@
-import type { KpiLine, MonthWorkspace, PeriodInput, Project } from '../lib/motivation/types'
+import type {
+  KpiLine,
+  MonthWorkspace,
+  PeriodInput,
+  Project,
+  VacationHalf,
+} from '../lib/motivation/types'
+import { defaultVacationHalf } from '../lib/motivation/vacation'
 import { uid } from '../lib/format'
 
 const STORAGE_KEY = 'targetologist-motivation-workspace'
@@ -43,6 +50,26 @@ export function defaultProject(): Project {
   }
 }
 
+function normalizeVacationHalf(raw: VacationHalf | undefined): VacationHalf {
+  return {
+    enabled: raw?.enabled ?? false,
+    spendRub: raw?.spendRub ?? 0,
+    note: raw?.note,
+  }
+}
+
+function normalizeWorkspace(parsed: MonthWorkspace): MonthWorkspace {
+  return {
+    ...parsed,
+    vacationH1: normalizeVacationHalf(parsed.vacationH1 ?? defaultVacationHalf()),
+    vacationH2: normalizeVacationHalf(parsed.vacationH2 ?? defaultVacationHalf()),
+    projects: parsed.projects.map((p) => ({
+      ...p,
+      kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
+    })),
+  }
+}
+
 export function defaultWorkspace(month?: string): MonthWorkspace {
   const m =
     month ??
@@ -50,6 +77,8 @@ export function defaultWorkspace(month?: string): MonthWorkspace {
   return {
     month: m,
     projects: [defaultProject()],
+    vacationH1: defaultVacationHalf(),
+    vacationH2: defaultVacationHalf(),
   }
 }
 
@@ -61,13 +90,7 @@ export function loadWorkspace(): MonthWorkspace {
     if (!parsed.month || !Array.isArray(parsed.projects)) {
       return defaultWorkspace()
     }
-    return {
-      ...parsed,
-      projects: parsed.projects.map((p) => ({
-        ...p,
-        kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
-      })),
-    }
+    return normalizeWorkspace(parsed)
   } catch {
     return defaultWorkspace()
   }
@@ -95,11 +118,5 @@ export async function importJson(file: File): Promise<MonthWorkspace> {
   if (!parsed.month || !Array.isArray(parsed.projects)) {
     throw new Error('Неверный формат файла')
   }
-  return {
-    ...parsed,
-    projects: parsed.projects.map((p) => ({
-      ...p,
-      kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
-    })),
-  }
+  return normalizeWorkspace(parsed)
 }

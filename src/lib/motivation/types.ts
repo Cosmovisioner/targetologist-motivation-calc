@@ -27,9 +27,17 @@ export interface Project {
   budgetPreviousMonthRub: number
 }
 
+export interface VacationHalf {
+  enabled: boolean
+  spendRub: number
+  note?: string
+}
+
 export interface MonthWorkspace {
   month: string
   projects: Project[]
+  vacationH1?: VacationHalf
+  vacationH2?: VacationHalf
 }
 
 export interface LinePeriodMetrics {
@@ -65,6 +73,23 @@ export interface GrowthResult {
   payoutRub: number
 }
 
+export interface VacationHalfBreakdown {
+  enabled: boolean
+  spendRub: number
+  vacationPoolRub: number
+  replacerShareRub: number
+  yourShareRub: number
+}
+
+export interface VacationResult {
+  vacationSpendRub: number
+  vacationPoolRub: number
+  replacerShareRub: number
+  yourVacationShareRub: number
+  h1: VacationHalfBreakdown
+  h2: VacationHalfBreakdown
+}
+
 export interface SalaryResult {
   h1: HalfPeriodResult
   h2: HalfPeriodResult
@@ -73,4 +98,6 @@ export interface SalaryResult {
   totalRub: number
   capped: boolean
   salaryCapRub: number
+  vacation: VacationResult | null
+  netTotalRub: number
 }

@@ -3,6 +3,7 @@ import FormulasSheet from './components/FormulasSheet'
 import KpiDashboard from './components/KpiDashboard'
 import ProjectsTable from './components/ProjectsTable'
 import ResultsPanel from './components/ResultsPanel'
+import VacationPanel from './components/VacationPanel'
 import UserGuide from './components/UserGuide'
 import type { MonthWorkspace } from './lib/motivation/types'
 import {
@@ -93,6 +94,7 @@ export default function App() {
           <UserGuide currentMonth={workspace.month} />
           <KpiDashboard workspace={workspace} />
           <ProjectsTable workspace={workspace} onChange={setWorkspace} />
+          <VacationPanel workspace={workspace} onChange={setWorkspace} />
           <FormulasSheet />
         </div>
         <ResultsPanel workspace={workspace} />

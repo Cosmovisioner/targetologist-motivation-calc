@@ -1,3 +1,4 @@
+import { roundMoney } from '../format'
 import type { PeriodInput } from './types'
 
 /** Фактическая цена лида = бюджет ÷ лиды */
@@ -15,9 +16,12 @@ export function effectiveLeadPriceRub(period: PeriodInput): number | null {
 /** После изменения бюджета или лидов — подставить авто-цену в поле */
 export function periodWithAutoLeadPrice(period: PeriodInput): PeriodInput {
   const auto = factCplRub(period.budgetFactRub, period.leads)
+  if (auto === null) {
+    return { ...period, leadPriceRub: 0 }
+  }
   return {
     ...period,
-    leadPriceRub: auto !== null ? Math.round(auto) : period.leadPriceRub,
+    leadPriceRub: roundMoney(auto),
   }
 }
 

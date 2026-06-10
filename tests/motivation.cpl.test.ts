@@ -29,4 +29,9 @@ describe('цена лида (CPL)', () => {
     const p = periodWithAutoLeadPrice({ budgetFactRub: 500_000, leads: 500, leadPriceRub: 0 })
     expect(p.leadPriceRub).toBe(1000)
   })
+
+  it('periodWithAutoLeadPrice при 0/0 сбрасывает цену лида в 0', () => {
+    const p = periodWithAutoLeadPrice({ budgetFactRub: 0, leads: 0, leadPriceRub: 1500 })
+    expect(p.leadPriceRub).toBe(0)
+  })
 })
