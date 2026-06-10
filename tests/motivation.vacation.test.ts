@@ -39,28 +39,48 @@ function workspace(
 }
 
 describe('отпуск 60/40 при ставке 5,5%', () => {
-  it('100k отпускного открута → пул 5500, замене 3300, вам 2200', () => {
+  it('был в отпуске: 100k → пул 5500, −3300 замене, 2200 вам', () => {
     const ws: MonthWorkspace = {
       ...workspace(0, 0, 100, 100, 0),
-      vacation: { spendRub: 100_000 },
+      vacation: { awaySpendRub: 100_000, replacementSpendRub: 0 },
     }
 
     const salary = calcSalary(ws)
     expect(salary.vacation).not.toBeNull()
-    expect(salary.vacation!.vacationPoolRub).toBe(5500)
-    expect(salary.vacation!.replacerShareRub).toBe(3300)
-    expect(salary.vacation!.yourVacationShareRub).toBe(2200)
+    expect(salary.vacation!.awayPoolRub).toBe(5500)
+    expect(salary.vacation!.awayDeductionRub).toBe(3300)
+    expect(salary.vacation!.awayYourShareRub).toBe(2200)
+    expect(salary.vacation!.replacementBonusRub).toBe(0)
+    expect(salary.vacation!.netAdjustmentRub).toBe(-3300)
   })
 
-  it('вычитает долю замены из итога', () => {
+  it('замещал коллегу: 100k → +3300 к итогу', () => {
     const ws: MonthWorkspace = {
       ...workspace(500_000, 420_000, 108, 101, 1_000_000),
-      vacation: { spendRub: 100_000 },
+      vacation: { awaySpendRub: 0, replacementSpendRub: 100_000 },
     }
 
     const salary = calcSalary(ws)
     expect(salary.totalRub).toBe(45_600)
-    expect(salary.vacation!.replacerShareRub).toBe(3300)
-    expect(salary.netTotalRub).toBe(42_300)
+    expect(salary.vacation!.replacementBonusRub).toBe(3300)
+    expect(salary.netTotalRub).toBe(48_900)
+  })
+
+  it('оба сценария в одном месяце: −отпуск +замещение', () => {
+    const ws: MonthWorkspace = {
+      ...workspace(500_000, 420_000, 108, 101, 1_000_000),
+      vacation: { awaySpendRub: 368_801.12, replacementSpendRub: 200_000 },
+    }
+
+    const salary = calcSalary(ws)
+    expect(salary.vacation!.awayDeductionRub).toBeGreaterThan(0)
+    expect(salary.vacation!.replacementBonusRub).toBe(6600)
+    expect(salary.netTotalRub).toBe(
+      round(salary.totalRub + salary.vacation!.netAdjustmentRub),
+    )
   })
 })
+
+function round(n: number) {
+  return Math.round(n * 100) / 100
+}

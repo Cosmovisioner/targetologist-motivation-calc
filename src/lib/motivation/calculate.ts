@@ -236,9 +236,7 @@ export function calcSalary(workspace: MonthWorkspace): SalaryResult {
   const cap = MOTIVATION_RULES.salaryCapRub
   const totalRub = roundMoney(Math.min(totalBeforeCapRub, cap))
   const vacation = calcVacation(workspace)
-  const netTotalRub = roundMoney(
-    totalRub - (vacation?.replacerShareRub ?? 0),
-  )
+  const netTotalRub = roundMoney(totalRub + (vacation?.netAdjustmentRub ?? 0))
 
   return {
     h1,

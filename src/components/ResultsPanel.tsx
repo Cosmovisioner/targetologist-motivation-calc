@@ -44,11 +44,11 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
         {salary.vacation && (
           <p className="text-xs text-graphite/80 mt-2">
             Мотивация {formatRub(salary.totalRub)}
-            {salary.vacation.replacerShareRub > 0 && (
-              <>
-                {' '}
-                − замене {formatRub(salary.vacation.replacerShareRub)}
-              </>
+            {salary.vacation.awayDeductionRub > 0 && (
+              <> − отпуск {formatRub(salary.vacation.awayDeductionRub)}</>
+            )}
+            {salary.vacation.replacementBonusRub > 0 && (
+              <> + замещение {formatRub(salary.vacation.replacementBonusRub)}</>
             )}
           </p>
         )}
@@ -108,21 +108,27 @@ export default function ResultsPanel({ workspace }: { workspace: MonthWorkspace 
           formula="открут × коэф лида"
         />
         {salary.vacation && (
-          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3">
-            <div className="flex justify-between items-baseline mb-1">
-              <span className="font-semibold text-sm text-graphite">Отпуск</span>
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 space-y-2">
+            <div className="flex justify-between items-baseline">
+              <span className="font-semibold text-sm text-graphite">Отпуск / замещение</span>
               <span className="mono-tag text-sm text-amber-900">
-                −{formatRub(salary.vacation.replacerShareRub)}
+                {salary.vacation.netAdjustmentRub >= 0 ? '+' : ''}
+                {formatRub(salary.vacation.netAdjustmentRub)}
               </span>
             </div>
-            <p className="mono-tag text-[10px] text-graphite/80">
-              Открут {formatRub(salary.vacation.vacationSpendRub)} · пул{' '}
-              {MOTIVATION_RULES.vacationCoefPercent}% = {formatRub(salary.vacation.vacationPoolRub)}
-            </p>
-            <p className="text-[10px] mt-1 opacity-70">
-              Ваша доля 40%: {formatRub(salary.vacation.yourVacationShareRub)} · замене 60%:{' '}
-              {formatRub(salary.vacation.replacerShareRub)}
-            </p>
+            {salary.vacation.awaySpendRub > 0 && (
+              <p className="text-[10px] text-graphite/80">
+                Был в отпуске: {formatRub(salary.vacation.awaySpendRub)} → −
+                {formatRub(salary.vacation.awayDeductionRub)} (ваша доля 40%:{' '}
+                {formatRub(salary.vacation.awayYourShareRub)})
+              </p>
+            )}
+            {salary.vacation.replacementSpendRub > 0 && (
+              <p className="text-[10px] text-graphite/80">
+                Замещал: {formatRub(salary.vacation.replacementSpendRub)} → +
+                {formatRub(salary.vacation.replacementBonusRub)} (60% пула)
+              </p>
+            )}
           </div>
         )}
 

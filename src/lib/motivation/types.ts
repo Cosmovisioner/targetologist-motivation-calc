@@ -28,7 +28,10 @@ export interface Project {
 }
 
 export interface VacationInput {
-  spendRub: number
+  /** Открут, пока вас заменяли (вы в отпуске) */
+  awaySpendRub: number
+  /** Открут, пока вы заменяли коллегу */
+  replacementSpendRub: number
 }
 
 export interface MonthWorkspace {
@@ -71,10 +74,18 @@ export interface GrowthResult {
 }
 
 export interface VacationResult {
-  vacationSpendRub: number
-  vacationPoolRub: number
-  replacerShareRub: number
-  yourVacationShareRub: number
+  awaySpendRub: number
+  replacementSpendRub: number
+  awayPoolRub: number
+  replacementPoolRub: number
+  /** 60% пула — уходит замене (минус из ЗП отпускника) */
+  awayDeductionRub: number
+  /** 40% пула — остаётся отпускнику */
+  awayYourShareRub: number
+  /** 60% пула — бонус замещающему */
+  replacementBonusRub: number
+  /** replacementBonus − awayDeduction */
+  netAdjustmentRub: number
 }
 
 export interface SalaryResult {

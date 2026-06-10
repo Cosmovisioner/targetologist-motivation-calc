@@ -41,14 +41,23 @@ function normalizeLine(raw: LegacyKpiLine): KpiLine {
   }
 }
 
+type LegacyVacationSingle = { spendRub?: number }
+
 function migrateVacation(parsed: LegacyMonthWorkspace): VacationInput {
   if (parsed.vacation) {
-    return { spendRub: parsed.vacation.spendRub ?? 0 }
+    const v = parsed.vacation as Partial<VacationInput> & LegacyVacationSingle
+    if (v.awaySpendRub !== undefined || v.replacementSpendRub !== undefined) {
+      return {
+        awaySpendRub: v.awaySpendRub ?? 0,
+        replacementSpendRub: v.replacementSpendRub ?? 0,
+      }
+    }
+    return { awaySpendRub: v.spendRub ?? 0, replacementSpendRub: 0 }
   }
 
-  const h1Spend = parsed.vacationH1?.enabled ? (parsed.vacationH1.spendRub ?? 0) : 0
-  const h2Spend = parsed.vacationH2?.enabled ? (parsed.vacationH2.spendRub ?? 0) : 0
-  return { spendRub: h1Spend + h2Spend }
+  const awaySpendRub = parsed.vacationH1?.enabled ? (parsed.vacationH1.spendRub ?? 0) : 0
+  const replacementSpendRub = parsed.vacationH2?.enabled ? (parsed.vacationH2.spendRub ?? 0) : 0
+  return { awaySpendRub, replacementSpendRub }
 }
 
 function normalizeWorkspace(parsed: LegacyMonthWorkspace): MonthWorkspace {
