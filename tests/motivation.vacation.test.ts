@@ -42,8 +42,7 @@ describe('отпуск 60/40 при ставке 5,5%', () => {
   it('100k отпускного открута → пул 5500, замене 3300, вам 2200', () => {
     const ws: MonthWorkspace = {
       ...workspace(0, 0, 100, 100, 0),
-      vacationH1: { enabled: true, spendRub: 100_000 },
-      vacationH2: { enabled: false, spendRub: 0 },
+      vacation: { spendRub: 100_000 },
     }
 
     const salary = calcSalary(ws)
@@ -56,7 +55,7 @@ describe('отпуск 60/40 при ставке 5,5%', () => {
   it('вычитает долю замены из итога', () => {
     const ws: MonthWorkspace = {
       ...workspace(500_000, 420_000, 108, 101, 1_000_000),
-      vacationH1: { enabled: true, spendRub: 100_000 },
+      vacation: { spendRub: 100_000 },
     }
 
     const salary = calcSalary(ws)

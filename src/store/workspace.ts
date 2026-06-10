@@ -3,14 +3,25 @@ import type {
   MonthWorkspace,
   PeriodInput,
   Project,
-  VacationHalf,
+  VacationInput,
 } from '../lib/motivation/types'
-import { defaultVacationHalf } from '../lib/motivation/vacation'
+import { defaultVacation } from '../lib/motivation/vacation'
 import { uid } from '../lib/format'
+
+type LegacyVacationHalf = {
+  enabled: boolean
+  spendRub: number
+  note?: string
+}
 
 const STORAGE_KEY = 'targetologist-motivation-workspace'
 
 type LegacyKpiLine = KpiLine & { kpiPlanRub?: number; kpiPlanLeads?: number }
+
+type LegacyMonthWorkspace = MonthWorkspace & {
+  vacationH1?: LegacyVacationHalf
+  vacationH2?: LegacyVacationHalf
+}
 
 function normalizePeriod(p: PeriodInput & { leadPriceRub?: number }): PeriodInput {
   return {
@@ -27,6 +38,28 @@ function normalizeLine(raw: LegacyKpiLine): KpiLine {
     kpiPriceRub: rest.kpiPriceRub ?? kpiPlanRub ?? 0,
     h1: normalizePeriod(rest.h1),
     h2: normalizePeriod(rest.h2),
+  }
+}
+
+function migrateVacation(parsed: LegacyMonthWorkspace): VacationInput {
+  if (parsed.vacation) {
+    return { spendRub: parsed.vacation.spendRub ?? 0 }
+  }
+
+  const h1Spend = parsed.vacationH1?.enabled ? (parsed.vacationH1.spendRub ?? 0) : 0
+  const h2Spend = parsed.vacationH2?.enabled ? (parsed.vacationH2.spendRub ?? 0) : 0
+  return { spendRub: h1Spend + h2Spend }
+}
+
+function normalizeWorkspace(parsed: LegacyMonthWorkspace): MonthWorkspace {
+  const { vacationH1: _h1, vacationH2: _h2, ...rest } = parsed
+  return {
+    ...rest,
+    vacation: migrateVacation(parsed),
+    projects: parsed.projects.map((p) => ({
+      ...p,
+      kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
+    })),
   }
 }
 
@@ -50,26 +83,6 @@ export function defaultProject(): Project {
   }
 }
 
-function normalizeVacationHalf(raw: VacationHalf | undefined): VacationHalf {
-  return {
-    enabled: raw?.enabled ?? false,
-    spendRub: raw?.spendRub ?? 0,
-    note: raw?.note,
-  }
-}
-
-function normalizeWorkspace(parsed: MonthWorkspace): MonthWorkspace {
-  return {
-    ...parsed,
-    vacationH1: normalizeVacationHalf(parsed.vacationH1 ?? defaultVacationHalf()),
-    vacationH2: normalizeVacationHalf(parsed.vacationH2 ?? defaultVacationHalf()),
-    projects: parsed.projects.map((p) => ({
-      ...p,
-      kpiLines: p.kpiLines.map((l) => normalizeLine(l as LegacyKpiLine)),
-    })),
-  }
-}
-
 export function defaultWorkspace(month?: string): MonthWorkspace {
   const m =
     month ??
@@ -77,8 +90,7 @@ export function defaultWorkspace(month?: string): MonthWorkspace {
   return {
     month: m,
     projects: [defaultProject()],
-    vacationH1: defaultVacationHalf(),
-    vacationH2: defaultVacationHalf(),
+    vacation: defaultVacation(),
   }
 }
 
@@ -86,7 +98,7 @@ export function loadWorkspace(): MonthWorkspace {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaultWorkspace()
-    const parsed = JSON.parse(raw) as MonthWorkspace
+    const parsed = JSON.parse(raw) as LegacyMonthWorkspace
     if (!parsed.month || !Array.isArray(parsed.projects)) {
       return defaultWorkspace()
     }
@@ -114,7 +126,7 @@ export function exportJson(ws: MonthWorkspace): void {
 
 export async function importJson(file: File): Promise<MonthWorkspace> {
   const text = await file.text()
-  const parsed = JSON.parse(text) as MonthWorkspace
+  const parsed = JSON.parse(text) as LegacyMonthWorkspace
   if (!parsed.month || !Array.isArray(parsed.projects)) {
     throw new Error('Неверный формат файла')
   }

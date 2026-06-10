@@ -27,17 +27,14 @@ export interface Project {
   budgetPreviousMonthRub: number
 }
 
-export interface VacationHalf {
-  enabled: boolean
+export interface VacationInput {
   spendRub: number
-  note?: string
 }
 
 export interface MonthWorkspace {
   month: string
   projects: Project[]
-  vacationH1?: VacationHalf
-  vacationH2?: VacationHalf
+  vacation?: VacationInput
 }
 
 export interface LinePeriodMetrics {
@@ -73,21 +70,11 @@ export interface GrowthResult {
   payoutRub: number
 }
 
-export interface VacationHalfBreakdown {
-  enabled: boolean
-  spendRub: number
-  vacationPoolRub: number
-  replacerShareRub: number
-  yourShareRub: number
-}
-
 export interface VacationResult {
   vacationSpendRub: number
   vacationPoolRub: number
   replacerShareRub: number
   yourVacationShareRub: number
-  h1: VacationHalfBreakdown
-  h2: VacationHalfBreakdown
 }
 
 export interface SalaryResult {
